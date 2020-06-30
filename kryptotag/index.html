@@ -1,0 +1,203 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <title>Kryptotag</title>
+
+  <!-- Bootstrap Core CSS -->
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Theme CSS -->
+  <link href="css/freelancer.css" rel="stylesheet">
+
+  <!-- Kryptotag CSS -->
+  <link href="css/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+
+  <!-- Custom Fonts -->
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic" rel="stylesheet" type="text/css">
+
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+  <![endif]-->
+
+</head>
+
+<body id="page-top" class="index">
+<div id ="app">
+  <!-- Navigation -->
+  <nav id="mainNav" class="navbar navbar-default navbar-fixed-top navbar-custom">
+      <div class="container">
+          <!-- Brand and toggle get grouped for better mobile display -->
+          <div class="navbar-header page-scroll">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                 <span class="sr-only">Toggle navigation</span> Menu <i class="fa fa-bars"></i>
+              </button>
+              <a class="navbar-brand" href="index.html">Kryptotag</a>
+          </div>
+          <!-- /.navbar-collapse -->
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li class="hidden">
+                        <a href="#"></a>
+                    </li>
+                    <li class="page-scroll">
+                        <a href="#">Sobre</a>
+                    </li>
+                    <li class="page-scroll">
+                        <a href="#">Contato</a>
+                    </li>
+                </ul>
+            </div>
+
+      </div>
+      <!-- /.container-fluid -->
+  </nav>
+
+  <!-- Header -->
+  <header v-if="!upload_visible">>
+      <div class="container" id="maincontent" tabindex="-1">
+          <div class="row">
+              <div class="col-lg-12">
+                  <div class="intro-text">
+                      <h1 class="name">Kryptotag</h1>
+                      <hr class="star-light">
+                      <span class="skills">Autenticação de documentos para OPME</span>
+                  </div>
+                  <div>
+                    <button type="button" class="btn btn-primary btn-lg buttonspace" v-on:click="display_upload">Vamos Começar!</button>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </header>
+ 
+  <section id = "upload" v-if="upload_visible" v-cloak>
+     <div class="container">
+       <div class="row">
+         <div class="col-lg-12 text-center">
+           <div v-if="web3Missing">
+             <p>Por favor instale o plugin <a href="https://metamask.io/" target="_blank">Metamask</a>  para utilizar o sistema</p>
+           </div>
+           <div v-if="!web3Missing">
+             <div v-if="!hash">
+               <h2>Arraste um arquivo no campo abaixo</h2>
+               <hr class="star-light">
+             </div> 
+             <div v-bind:class="{ dragging: dragging }" v-if="!hash" id="drop_zone" ondrop="drop_handler(event);" ondragover="allowDrop(event)" ondragleave="dragout(event)">
+               <strong>Drop Zone ...</strong>
+             </div>
+             <div v-if="hash"> 
+               <h2>Detalhes do Arquivo</h2>
+               <hr class="star-light">
+               <table class="table">
+                 <tr><th>Nome</th><td>{{ name }}<span v-if="name.length==32">...</span></td></tr>
+                 <tr><th>Tipo de Aqruivo</th><td>{{ type }}<span v-if="name.length==32">...</span></td></tr>
+                 <tr><th>Tamanho</th><td>{{ size }} bytes</td></tr>                 
+                 <tr><th>Ultima modificação</th><td>{{ lastModified }}</td></tr>
+                 <tr><th>Hash</th><td>{{ hash }}</td></tr><br>                
+               </table>
+               <div class="container">
+                    <div class="col-sm-12 col-md-12"></div>
+                    <h3>Etiqueta</h3>
+                    <img :src="'https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl='+hash">
+                 </div>
+             </div>
+             <div class="buttonspace" v-if="!animate">
+               <button type="button" class="btn btn-primary btn-lg" :disabled="!hash || !name || hash.length!=66" v-on:click="create_contract">Autenticar!</button>
+               <button type="button" class="btn btn-danger btn-lg"  v-on:click="cancel_upload">Cancel</button>
+             </div>
+           </div>
+           <div v-if="animate">
+             <p v-if="!error"><img src="img/animation.gif" /></p>
+             <p v-if="!error"> Por favor espere pelo contrato ser armazenado no na rede Ethereum. 
+               Este processo pode demorar um minuto. Quando pronto você será redirecionado para seu certificado.</p> 
+             <p><a v-bind:href="etherscanLink" target="_new">Transação Ethereum {{ tx }}</a></p>
+             <p v-if="error">Um erro ocorreu. O erro é "{{ error }}".</p>
+           </div>
+         </div>
+       </div>
+    </div>
+  </section>
+
+  <!-- Contact Section -->
+  <section id="contact">
+      <div class="container">
+          <div class="row text-center">
+              <div class="col-lg-4">
+                  <i class="fa fa-file-text-o fa-5x icon-padding" aria-hidden="true"></i>
+                  <i class="fa fa-arrow-right fa-5x icon-padding" aria-hidden="true"></i>
+                  <i class="fa fa-slack fa-5x icon-padding" aria-hidden="true"></i>
+                  <p><strong><i>1. Nós tornamos seu documento em uma hash única e lhe oferecemos uma etiqueta</i></strong> </p>
+              </div>
+              <div class="col-lg-4">
+                  <i class="fa fa-slack fa-5x icon-padding" aria-hidden="true"></i>
+                  <i class="fa fa-arrow-right fa-5x icon-padding" aria-hidden="true"></i>
+                  <i class="fa fa-chain fa-5x icon-padding" aria-hidden="true"></i>
+                  <p><strong><i>2. Autenticamos seu documento ao enviar a hash para a rede Ethereum</i></strong> </p>
+              </div>
+              <div class="col-lg-4">
+                  <i class="fa fa-certificate fa-5x icon-padding" aria-hidden="true"></i>
+                  <i class="fa fa-check fa-5x icon-padding" aria-hidden="true"></i>
+                  <p><strong><i>3. Mantenha seu Certificado de Autenticidade!</i></strong> </p>
+              </div>
+          </div>
+          <div class="row text-center">
+            <a class ="skills" href="#"><p>Saiba mais</p></a>
+          </div>
+
+      </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="text-center">
+      <div class="footer-below">
+          <div class="container">
+          <div class="row">
+                  <div class="col-lg-12">
+                      Produto Protótipo da Tese apresentada à Universidade Federal de São Paulo, para obtenção do Título de Mestre Profissional em Ciências.
+                  </div>
+              </div>
+              <div class="row">
+                  <div class="col-lg-12">
+                      Orientadora: Profa. Dra. Lydia Masako Ferreira Coorientadora: Profa. Elaine Horibe Song  Discente: André Luiz Torres da Fonseca Júnior 2017
+                  </div>
+              </div>
+          </div>
+      </div>
+  </footer>
+
+  <!-- Scroll to Top Button (Only visible on small and extra-small screen sizes) -->
+  <div class="scroll-top page-scroll hidden-sm hidden-xs hidden-lg hidden-md">
+      <a class="btn btn-primary" href="#page-top">
+          <i class="fa fa-chevron-up"></i>
+      </a>
+  </div>
+
+</div>
+
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.2.1.js"></script>
+
+  <!-- Bootstrap Core JavaScript -->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <script src="https://unpkg.com/vue"></script>
+  <script src="js/solidity.js"></script>
+  <script src="js/kryptotag.js"></script>
+
+</body>
+
+</html>
